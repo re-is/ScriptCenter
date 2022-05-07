@@ -14,27 +14,48 @@
 	var opened_text_file = fso.OpenTextFile(css_file, 1);
 	var css_text = opened_text_file.ReadAll(); opened_text_file.Close();
 
-	// Kommentek törlése: ( HTML, CSS, Js )
+	// Új sor és kommentek törlése:
 	css_text = css_text.replace(/\r\n/g, '').replace(/(\/\*.*?\*\/)/g, '');
 
-	var double = css_text.split('"'), double_text = '';
-	for (var i = 0; i < double.length; i++) {
-		double_text += (i % 2 ? ('"' + double[i].replace(/\s/g, 'a(------(space)------)a') + '"') : double[i]);
-	}
+	// Karakterekre bontás:
+	var c = css_text.split(''), block = false, quote = '', new_text = '';
+	for (var i = 0; i < c.length; i++) {
 
-	var simple = double_text.split("'"), new_text = '';
-	for (var i = 0; i < simple.length; i++) {
-		new_text += (i % 2 ? ("'" + simple[i].replace(/\s/g, 'a(------(space)------)a') + "'") : simple[i]);
+		// Zárás:
+		if (c[i] === '}') block = false;
+
+				// Kettő közt:
+				if (block) {
+
+					// Idézőn kívül:
+					if (quote === '') {
+						new_text += c[i];
+					}
+					else {
+						new_text += ((c[i] === ' ') ? '--------SPACE--------' : (c[i] === '	') ? '--------TAB--------' : c[i]);
+					}
+
+					// Nyitás:
+					if (quote === '') {
+						if (c[i] === '"' || c[i] === "'") quote = c[i];
+					}
+					else if (quote === c[i]) quote = '';
+				}
+				// SelectorText:
+				else new_text += ((c[i] === ' ' || c[i] === '	') ? '--------SPACE--------' : c[i]);
+
+		// Nyitás:
+		if (c[i] === '{') block = true;
 	}
 
 	// Szóközök törlése:
 	new_text = new_text.replace(/((\s)\B|\B(\s))/g, '');
+	new_text = new_text.replace(/--------SPACE--------/g, ' ');
+	new_text = new_text.replace(/--------TAB--------/g, '	');
 
-	// Fontos szóközök visszaállítása:
-	new_text = new_text.replace(/a\(------\(space\)------\)a/g, ' ');
-
-	// ;}
-	new_text = new_text.replace(/\;\}/g, '}');
+	new_text = new_text.replace(/\;?\}\s*?/g, '} ');
+	new_text = new_text.replace(/\s*?\{/g, ' {');
+	new_text = new_text.replace(/\s\s*/g, ' ');
 
 	var tf = fso.CreateTextFile(css_file.substring(0, css_file.length - 4) + '.min.css', true);
 	tf.WriteLine(new_text);
