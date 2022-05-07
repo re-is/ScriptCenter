@@ -18,7 +18,7 @@
 	css_text = css_text.replace(/\r\n/g, '').replace(/(\/\*.*?\*\/)/g, '');
 
 	// Karakterekre bontás:
-	var c = css_text.split(''), block = false, quote = '', new_text = '';
+	var c = css_text.split(''), block = false, calc = false, quote = '', new_text = '';
 	for (var i = 0; i < c.length; i++) {
 
 		// Zárás:
@@ -27,13 +27,17 @@
 				// Kettő közt:
 				if (block) {
 
-					// Idézőn kívül:
-					if (quote === '') {
-						new_text += c[i];
-					}
-					else {
+					// Idézőn belül:
+					if (quote !== '') {
 						new_text += ((c[i] === ' ') ? '--------SPACE--------' : (c[i] === '	') ? '--------TAB--------' : c[i]);
 					}
+					else {
+						new_text += ((calc && c[i] === ' ') ? '--------SPACE--------' : c[i]);
+					}
+
+					// calc()
+					if (c[i-4] === 'c' && c[i-3] === 'a' && c[i-2] === 'l' && c[i-1] === 'c' && c[i] === '(') calc = true;
+					if (calc && c[i] === ')') calc = false;
 
 					// Nyitás:
 					if (quote === '') {
@@ -49,13 +53,12 @@
 	}
 
 	// Szóközök törlése:
-	new_text = new_text.replace(/((\s)\B|\B(\s))/g, '');
+	new_text = new_text.replace(/(\s\B|\B\s)/g, '');
 	new_text = new_text.replace(/--------SPACE--------/g, ' ');
 	new_text = new_text.replace(/--------TAB--------/g, '	');
 
-	new_text = new_text.replace(/\;?\}\s*?/g, '} ');
-	new_text = new_text.replace(/\s*?\{/g, ' {');
-	new_text = new_text.replace(/\s\s*/g, ' ');
+	new_text = new_text.replace(/\;*\}\s*/g, '}');
+	new_text = new_text.replace(/\s*\{/g, '{');
 
 	var tf = fso.CreateTextFile(css_file.substring(0, css_file.length - 4) + '.min.css', true);
 	tf.WriteLine(new_text);
