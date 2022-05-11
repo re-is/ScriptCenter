@@ -54,8 +54,13 @@ function js_min(js_name) {
 		// Kikapcsolás, ha a következő ugyanaz, mint a mostani és nincs előtte \ jel:
 		if (string === ch[i]) {
 			//	(/asaa\/ aaa/g, '')
-			//	( "dfsfs \"inner\" ffff" )
+			//	"dfsfs \"inner\" ffff["]
 			if (ch[i-1] !== '\\') {
+				string_temp = '';
+				string = '';
+			}
+			//	"HKCR\\htafile\\Shell\\Open\\Command\\["]
+			else if (ch[i-2] === '\\') {
 				string_temp = '';
 				string = '';
 			}
