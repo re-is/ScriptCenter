@@ -46,13 +46,19 @@ function js_min(js_name) {
 
 		}
 
+		// Kommentek kikapcsolása:
 		if (comment === 'block' && ch[i-1] === '*' && ch[i] === '/') comment = '';
 		if (comment === 'line' && ch[i+1] === '\n') comment = '';
 
-		// Először még nincs megadva a string, mert azonnal kikapcsolná:
+		// Az aktuális nincs megadva, mert azonnal kikapcsolná:
+		// Kikapcsolás, ha a következő ugyanaz, mint a mostani és nincs előtte \ jel:
 		if (string === ch[i]) {
-			string_temp = '';
-			string = '';
+			//	(/asaa\/ aaa/g, '')
+			//	( "dfsfs \"inner\" ffff" )
+			if (ch[i-1] !== '\\') {
+				string_temp = '';
+				string = '';
+			}
 		}
 		// A következő karakteren kell:
 		else string = string_temp;
