@@ -40,6 +40,8 @@ function js_min(js_name) {
 				else if (ch[i] === '	')						js_text += '@@_TABULATOR_@@';
 				// ;}
 				else if (ch[i] === ';' && ch[i+1] === '}')		js_text += '@@_SEMICOLON_@@';
+				// \\\n
+				else if (ch[i] === '\\' && ch[i+1] === '\r')	js_text += '@@_NEWLINE_@@';
 				// minden más
 				else											js_text += ch[i];
 			}
@@ -87,6 +89,7 @@ function js_min(js_name) {
 	js_text = js_text.replace(/@@_SPACE_@@/g, ' ');
 	js_text = js_text.replace(/@@_TABULATOR_@@/g, '	');
 	js_text = js_text.replace(/@@_SEMICOLON_@@/g, ';');
+	js_text = js_text.replace(/@@_NEWLINE_@@\s*/g, '');
 
 	var min = fso.CreateTextFile(js_name + '.min.js', true);
 	min.WriteLine(js_text);
