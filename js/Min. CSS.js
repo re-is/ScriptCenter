@@ -1,67 +1,106 @@
-/*-------------------------------
-	*** CSS Minifier ***
+function css_min(css_name) {
 
-	Author: István Reich
-	Release date: 2022.05.06.
--------------------------------*/
-
-(function() {
-
-	//-----------------------------------------------------+
-	var css_file = 'shl.css';
-	//-----------------------------------------------------+
+	var css_file = (css_name + '.css');
 	var fso = new ActiveXObject('Scripting.FileSystemObject');
 	var opened_text_file = fso.OpenTextFile(css_file, 1);
-	var css_text = opened_text_file.ReadAll(); opened_text_file.Close();
+	var text = opened_text_file.ReadAll(); opened_text_file.Close();
+	var ch = text.split('');
+	var css_text = '';
+	var string = '', string_temp = '';
+	var comment = '';
+	var selector = true;
 
-	// Új sor és kommentek törlése:
-	css_text = css_text.replace(/\r\n/g, '').replace(/(\/\*.*?\*\/)/g, '');
+	for (var i = 0; i < ch.length; i++) {
 
-	// Karakterekre bontás:
-	var c = css_text.split(''), block = false, calc = false, quote = '', new_text = '';
-	for (var i = 0; i < c.length; i++) {
+		if (comment === '' && string === '') {
+			if (ch[i] === '"' || ch[i] === "'") string_temp = ch[i];
+		}
 
-		// Zárás:
-		if (c[i] === '}') block = false;
+		if (comment === '' && string === '') {
+			if (ch[i] === '/' && ch[i+1] === '*') comment = 'block';
+		}
 
-				// Kettő közt:
-				if (block) {
+		if (comment === '' && string === '') {
+			if (selector && ch[i] === '{') selector = false;
+			if (!selector && ch[i] === '}') selector = true;
+		}
 
-					// Idézőn belül:
-					if (quote !== '') {
-						new_text += ((c[i] === ' ') ? '--------SPACE--------' : (c[i] === '	') ? '--------TAB--------' : c[i]);
-					}
-					else {
-						new_text += ((calc && c[i] === ' ') ? '--------SPACE--------' : c[i]);
-					}
+		// Kommenten kívül:
+		if (comment === '') {
 
-					// calc()
-					if (c[i-4] === 'c' && c[i-3] === 'a' && c[i-2] === 'l' && c[i-1] === 'c' && c[i] === '(') calc = true;
-					if (calc && c[i] === ')') calc = false;
+			// String-en kívül:
+			if (string === '') {
+				css_text += ((selector && ch[i] === ' ' && ch[i+1] !== '{') ? '@@_SPACE_@@' : ch[i]);
+			}
+			else {
+				// /*
+				if (ch[i] === '/' && ch[i+1] === '*')			css_text += '@@_COMMENT_@@';
+				// *-/
+				else if (ch[i] === '*' && ch[i+1] === '/')		css_text += '@@_COMMENT_END_@@';
+				// space
+				else if (ch[i] === ' ')							css_text += '@@_SPACE_@@';
+				// tab
+				else if (ch[i] === '	')						css_text += '@@_TABULATOR_@@';
+				// ;}
+				else if (ch[i] === ';' && ch[i+1] === '}')		css_text += '@@_SEMICOLON_@@';
+				// minden más
+				else											css_text += ch[i];
+			}
 
-					// Nyitás:
-					if (quote === '') {
-						if (c[i] === '"' || c[i] === "'") quote = c[i];
-					}
-					else if (quote === c[i]) quote = '';
-				}
-				// SelectorText:
-				else new_text += ((c[i] === ' ' || c[i] === '	') ? '--------SPACE--------' : c[i]);
+		}
 
-		// Nyitás:
-		if (c[i] === '{') block = true;
+		// Kommentek kikapcsolása:
+		if (comment === 'block' && ch[i-1] === '*' && ch[i] === '/') comment = '';
+
+		// Az aktuális nincs megadva, mert azonnal kikapcsolná:
+		// Kikapcsolás, ha a következő ugyanaz, mint a mostani és nincs előtte \ jel:
+		if (string === ch[i]) {
+			//	(/asaa\/ aaa/g, '')
+			//	"dfsfs \"inner\" ffff["]
+			if (ch[i-1] !== '\\') {
+				string_temp = '';
+				string = '';
+			}
+			//	"HKCR\\htafile\\Shell\\Open\\Command\\["]
+			else if (ch[i-2] === '\\') {
+				string_temp = '';
+				string = '';
+			}
+		}
+		// A következő karakteren kell:
+		else string = string_temp;
 	}
 
-	// Szóközök törlése:
-	new_text = new_text.replace(/(\s\B|\B\s)/g, '');
-	new_text = new_text.replace(/--------SPACE--------/g, ' ');
-	new_text = new_text.replace(/--------TAB--------/g, '	');
+	// calc(100px[ ]-[ ]20px)
+	css_text = css_text.replace(/(\s+)\B(?=[-+/*]\s).(\s+)/g, function(operator){
+		return ('@@_SPACE_@@' + operator + '@@_SPACE_@@');
+	});
 
-	new_text = new_text.replace(/\;*\}\s*/g, '}');
-	new_text = new_text.replace(/\s*\{/g, '{');
+	// TAB:
+	css_text = css_text.replace(/\t/g, '');
 
-	var tf = fso.CreateTextFile(css_file.substring(0, css_file.length - 4) + '.min.css', true);
-	tf.WriteLine(new_text);
-	tf.Close();
+	// Sorok:
+	css_text = css_text.replace(/\r*\n*/g, '');
 
-})();
+	// Szóközök
+	css_text = css_text.replace(/(\s\B)|(\B\s)/g, '');
+
+	// ;}
+	css_text = css_text.replace(/(\;\})/g, '}');
+
+	// String-en belüliek visszaállítása:
+	css_text = css_text.replace(/@@_COMMENT_@@/g, '/');
+	css_text = css_text.replace(/@@_COMMENT_END_@@/g, '*');
+	css_text = css_text.replace(/@@_SPACE_@@/g, ' ');
+	css_text = css_text.replace(/@@_TABULATOR_@@/g, '	');
+	css_text = css_text.replace(/@@_SEMICOLON_@@/g, ';');
+
+	var min = fso.CreateTextFile(css_name + '.min.css', true);
+	min.WriteLine(css_text);
+	min.Close();
+
+	return css_text;
+
+}
+
+css_min('teszt');
