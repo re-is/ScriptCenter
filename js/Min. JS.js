@@ -51,7 +51,7 @@ function js_min(js_name) {
 		if (comment === 'line' && ch[i+1] === '\n') comment = '';
 
 		// Az aktuális nincs megadva, mert azonnal kikapcsolná:
-		// Kikapcsolás, ha a következő ugyanaz, mint a mostani és nincs előtte \ jel:
+		// Kikapcsolás, ha a következő ugyanaz, mint a mostani és nincs előtte \ jel vagy ha \\ van előtte:
 		if (string === ch[i]) {
 			//	(/asaa\/ aaa/g, '')
 			//	"dfsfs \"inner\" ffff["]
@@ -69,17 +69,11 @@ function js_min(js_name) {
 		else string = string_temp;
 	}
 
-	// Comment sorok:
-	js_text = js_text.replace(/(\/\/.*(?=\*\/))|(\/\/.*)/g, '\r\n');
-
 	// TAB:
 	js_text = js_text.replace(/\t/g, '');
 
 	// Sorok:
 	js_text = js_text.replace(/\r*\n*/g, '');
-
-	// Comment block:
-	js_text = js_text.replace(/(\/\*.*\*\/)/g, '');
 
 	// Szóközök
 	js_text = js_text.replace(/(\s\B)|(\B\s)/g, '');
