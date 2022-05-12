@@ -87,6 +87,9 @@ function css_min(css_name) {
 
 	// ;}
 	css_text = css_text.replace(/(\;\})/g, '}');
+	
+	// 1px solid #000
+	css_text = css_text.replace(/(\b#)/g, ' #');
 
 	// String-en belüliek visszaállítása:
 	css_text = css_text.replace(/@@_COMMENT_@@/g, '/');
