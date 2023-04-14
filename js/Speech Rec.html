@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="hu">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<title>Speech Recognizer</title>
+		<style type="text/css">
+
+			html, body {
+				height: 100%;
+				margin: 0;
+				background-color: #222;
+				color: #fff;
+				overflow: hidden;
+				font-family: "Verdana";
+			}
+
+			#rec {
+				position: relative;
+				width: 10vw;
+				margin-top: 4vh;
+				left: 50%;
+				transform: translateX(-50%);
+				background-color: #d83;
+				color: #fff
+			}
+
+			#speech-text {
+				border-top: 2px solid #777;
+				margin-top: 2vh;
+				padding: 2vw;
+			}
+
+		</style>
+	</head>
+	<body onload="loaded();">
+		<button id="rec" onclick="startRec();">Rec.</button>
+		<div id="speech-text"></div>
+
+		<script type="text/javascript">
+
+			function loaded() {
+
+				let log = (function(text) { document.querySelector('#speech-text').innerHTML += text });
+				let recognition = new window.webkitSpeechRecognition;
+
+				// Setup -------------------------------------------------------------------//
+
+				recognition.continuous = true;
+				recognition.lang = 'hu-HU';
+				recognition.interimResults = false;
+				recognition.maxAlternatives = 1;
+
+				// Events ------------------------------------------------------------------//
+
+				window.startRec = (function() {
+					recognition.start();
+					log('------ Speech started<br>');
+				});
+
+				recognition.onspeechend = (function() {
+					recognition.stop();
+					log('------ Speech ended<br>');
+				});
+
+				recognition.onresult = (function(event) {
+					let result = event.results;
+					log(result[result.length-1][0].transcript + '<br>');
+				});
+
+				recognition.onerror = (function(event) {
+					log('------ Error!<br>');
+				});
+
+			}
+
+		</script>
+	</body>
+</html>
