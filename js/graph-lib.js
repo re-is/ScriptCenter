@@ -1,10 +1,9 @@
 //-------------------------------------------//
-// 2022.03.25.
+// 2023.04.23.
 //-------------------------------------------//
 
-window.graph_listeners = { line: function() {}, column: function() {} };
+window.graph_listeners = {};
 
-// noinspection JSUnusedGlobalSymbols
 function createLineGraph(param) {
 
 	if (!param['elem']) return window.alert('createGraph({\n\n   elem :   HTMLElement   is not found!\n\n});\n');
@@ -159,7 +158,7 @@ function createLineGraph(param) {
 
 	// Adatok a kurzorból:
 	function dataByCursorPos(x, y, magnetY, func) {
-		let cursor = { point: [x, y], i: -1, iX: -1, iY: -1 }, coord = [false, false], offset = chart.offset(), y_value = 0, magnetX = Number(magnetY);
+		let cursor = {}, coord = [false, false], offset = chart.offset(), y_value = 0, magnetX = Number(magnetY);
 		// Abs to Rel:
 		x -= offset.left;
 		y -= offset.top;
@@ -176,14 +175,18 @@ function createLineGraph(param) {
 			relatives.main.map(function(p, i) {
 				coord[0] = ((x > (p[0]-magnetX)) && (x <= (p[0]+magnetX)));
 				coord[1] = ((y > (p[1]-magnetY)) && (y <= (p[1]+magnetY)));
-				if (coord[0] && coord[1]) cursor.i = i;
-				if (coord[0]) cursor.iX = i;
-				if (coord[1]) cursor.iY = i;
+				if (coord[0]) {
+					cursor.valueX = balance[i];
+					cursor.pointX = p[0];
+					cursor.pointY = p[1];
+					cursor.iX = i;
+				}
+				if (cursor.i === undefined && coord[0] && coord[1]) cursor.i = i;
 			});
 			y_value = (y - chart.float.top - main.width);
-			if (y_value >= chart.innerHeight) cursor.value = lowest.value;
-			else if (y_value <= 0) cursor.value = highest.value;
-			else cursor.value = (((chart.innerHeight - y_value) * step.value) + lowest.value);
+			if (y_value >= chart.innerHeight) cursor.valueY = lowest.value;
+			else if (y_value <= 0) cursor.valueY = highest.value;
+			else cursor.valueY = (((chart.innerHeight - y_value) * step.value) + lowest.value);
 		}
 		func(cursor);
 	}
@@ -226,19 +229,18 @@ function createLineGraph(param) {
 		dataByCursorPos: dataByCursorPos,
 		dataByCursor: function(magnetY, func) {
 			// Ha már van, akkor törlés:
-			window.removeEventListener('mousemove', window.graph_listeners.line);
+			window.removeEventListener('mousemove', window.graph_listeners[chart.class]);
 			// Újradefiniálás:
-			window.graph_listeners.line = (function(event) {
+			window.graph_listeners[chart.class] = (function(event) {
 				let x = event.clientX, y = event.clientY;
 				dataByCursorPos(x, y, magnetY, func);
 			});
 			// Hozzáadás:
-			window.addEventListener('mousemove', window.graph_listeners.line);
+			window.addEventListener('mousemove', window.graph_listeners[chart.class]);
 		}
 	}
 }
 
-// noinspection JSUnusedGlobalSymbols
 function createColumnGraph(param) {
 
 	if (!param['elem']) return window.alert('createGraph({\n\n   elem :   HTMLElement   is not found!\n\n});\n');
@@ -391,7 +393,7 @@ function createColumnGraph(param) {
 
 	// Adatok a kurzorból:
 	function dataByCursorPos(x, y, magnetY, func) {
-		let cursor = { point: [x, y], i: -1, iX: -1, iY: -1 }, coord = [false, false], offset = chart.offset(), y_value = 0, magnetX = Number(magnetY);
+		let cursor = {}, coord = [false, false], offset = chart.offset(), y_value = 0, magnetX = Number(magnetY);
 		// Abs to Rel:
 		x -= offset.left;
 		y -= offset.top;
@@ -410,14 +412,18 @@ function createColumnGraph(param) {
 			relatives.main.map(function(p, i) {
 				coord[0] = ((x > (p[0]-magnetX)) && (x <= (p[0]+magnetX)));
 				coord[1] = ((y > (p[1]-magnetY)) && (y <= (p[1]+magnetY)));
-				if (coord[0] && coord[1]) cursor.i = i;
-				if (coord[0]) cursor.iX = i;
-				if (coord[1]) cursor.iY = i;
+				if (coord[0]) {
+					cursor.valueX = items[i];
+					cursor.pointX = p[0];
+					cursor.pointY = p[1];
+					cursor.iX = i;
+				}
+				if (cursor.i === undefined && coord[0] && coord[1]) cursor.i = i;
 			});
 			y_value = (y - chart.float.top - zero.half);
-			if (y_value >= chart.innerHeight) cursor.value = smallest.item;
-			else if (y_value <= 0) cursor.value = largest.item;
-			else cursor.value = (((chart.innerHeight - y_value) * step.value) + smallest.item);
+			if (y_value >= chart.innerHeight) cursor.valueY = smallest.item;
+			else if (y_value <= 0) cursor.valueY = largest.item;
+			else cursor.valueY = (((chart.innerHeight - y_value) * step.value) + smallest.item);
 		}
 		func(cursor);
 	}
@@ -457,14 +463,14 @@ function createColumnGraph(param) {
 		dataByCursorPos: dataByCursorPos,
 		dataByCursor: function(magnetY, func) {
 			// Ha már van, akkor törlés:
-			window.removeEventListener('mousemove', window.graph_listeners.column);
+			window.removeEventListener('mousemove', window.graph_listeners[chart.class]);
 			// Újradefiniálás:
-			window.graph_listeners.column = (function(event) {
+			window.graph_listeners[chart.class] = (function(event) {
 				let x = event.clientX, y = event.clientY;
 				dataByCursorPos(x, y, magnetY, func);
 			});
 			// Hozzáadás:
-			window.addEventListener('mousemove', window.graph_listeners.column);
+			window.addEventListener('mousemove', window.graph_listeners[chart.class]);
 		}
 	}
 }
