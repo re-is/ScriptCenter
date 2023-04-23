@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="hu">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script type="text/javascript" src="https://cdn.rawgit.com/re-is/script/main/js/source_loader.js" link="https://raw.githubusercontent.com/re-is/script/main/js/graph-lib.js"></script>
+		<title>CSV Reader</title>
+		<style type="text/css">
+
+			.Main-body {
+				overflow: hidden;
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				font-size: 1vw;
+				font-family: "Verdana", serif;
+				user-select: none;
+				background-color: #eee;
+			}
+
+				.Left-panel {
+					position: absolute;
+					width: 10vw;
+					height: 100%;
+					background-color: #2c8;
+					border-right: 2px solid #000;
+					box-sizing: border-box;
+				}
+
+					.Buttons {
+						color: #fff;
+						width: calc(90% - 2px);
+						margin-left: 5%;
+						margin-top: 5%;
+						background-color: #555;
+						border: 1px solid #000;
+						text-align: center;
+						cursor: pointer;
+						height: 1.6em;
+						line-height: 1.5em;
+					}	.Buttons:hover { box-shadow: 0 0 0 100px inset rgba(250,250,250,0.2) }
+
+						.Removers {
+							position: relative;
+							width: 1.2em;
+							background-color: #f43;
+							float: right;
+							height: 1.2em;
+							line-height: 1.1em;
+							top: 0.2em;
+							right: 0.2em;
+						}	.Removers:hover { box-shadow: 0 0 0 100px inset rgba(250,250,250,0.2) }
+
+					.Stats {
+						position: absolute;
+						width: calc(100% - 1vw);
+						bottom: 0;
+						padding: 0.5vw;
+						color: #fff;
+						border-top: 2px solid #000;
+						background-color: #37d;
+					}
+
+				.Charts {
+					position: absolute;
+					width: 88vw;
+					height: calc(100% - 4vw);
+					top: 3vw;
+					right: 1vw;
+				}
+
+					.Charts-Inners {
+						width: 100%;
+						height: calc(50% - 0.5vw);
+						margin-bottom: 1vw;
+					}
+
+			/*--------------------------------------------------*/
+
+			.Chart-Month-Line-main,
+			.Chart-Year-Line-main {
+				stroke-width: 2px;
+				stroke: #000;
+				fill: rgba(20,100,200,0.5);
+			}
+
+			.Chart-Month-Line-trend,
+			.Chart-Year-Line-trend,
+			.Chart-Month-Column-avg,
+			.Chart-Year-Column-avg {
+				stroke-width: 2px;
+				stroke: #000;
+				stroke-dasharray: 2px, 4px;
+			}
+
+			.Chart-Month-Line-zero,
+			.Chart-Year-Line-zero,
+			.Chart-Month-Column-zero,
+			.Chart-Year-Column-zero {
+				stroke-width: 2px;
+				stroke: #f00;
+				fill: rgba(250,60,30,0.3);
+			}
+
+			.Chart-Month-Column-main,
+			.Chart-Year-Column-main {
+				max-width: 70%;
+				border-top: 2px solid #000;
+				border-bottom: 2px solid #000;
+				background-color: rgba(20,100,200,0.5);
+			}
+
+			/*--------------------------------------------------*/
+
+			.Year-separator-block {
+				position: absolute;
+				width: 88vw;
+				height: calc(100% - 2vw);
+				top: 1vw;
+				right: 1vw;
+			}
+
+				.Year-separators {
+					float: left;
+					text-align: center;
+					border-left: 1px dashed #000;
+					box-sizing: border-box;
+					height: 100%;
+				}	.Year-separators:last-child { border-right: 1px dotted #000 }
+
+			.Markers {
+				position: absolute;
+				display: none;
+				width: 10px;
+				height: 10px;
+				background-color: rgba(250,0,0,0.6);
+				border-radius: 50%;
+				transform: translate(-50%,-50%);
+			}
+
+		</style>
+	</head>
+	<body>
+		<div class="Main-body">
+			<div class="Left-panel">
+				<div class="Buttons" id="Browse">Browse CSV</div><input id="File-input" type="file" name="csv" class="csv-input" accept=".csv" onchange="readCsv(this.files[0])" style="display:none;" placeholder="_">
+				<hr style="width: 90%; border-color: #000">
+				<div class="Stats"></div>
+			</div>
+			<div class="Year-separator-block"></div>
+			<div class="Charts Chart-Year" style="opacity:0">
+				<div class="Charts-Inners Chart-Year-Column"></div>
+				<div class="Charts-Inners Chart-Year-Line"></div>
+			</div>
+			<div class="Charts Chart-Month">
+				<div class="Charts-Inners Chart-Month-Column"></div>
+				<div class="Charts-Inners Chart-Month-Line"></div>
+			</div>
+		</div>
+		<script type="text/javascript">
+
+			function monthName(i) { return (i === 1 ? 'Jan' : i === 2 ? 'Feb' : i === 3 ? 'Mar' : i === 4 ? 'Apr' : i === 5 ? 'May' : i === 6 ? 'Jun' : i === 7 ? 'Jul' : i === 8 ? 'Aug' : i === 9 ? 'Sep' : i === 10 ? 'Oct' : i === 11 ? 'Nov' : 'Dec') }
+			function find(str, fnd) { return (str.search(fnd) > -1) }
+			function elem(cls) { return document.querySelector(cls) }
+
+			window.g = {
+				csv_index: 0,
+				reports: {}
+			};
+
+			//--------------------------------------------------------------------------------------->
+
+			document.addEventListener('click', function(event) {
+				let id = String(event.target['id']);
+				if (find(id, 'Browse')) elem('#File-input').click();
+				if (find(id, 'Report')) makeGraph(id.split('-')[1]);
+				if (find(id, 'Remove')) removeReport(id.split('-')[1]);
+				if (find(event.target['tagName'], 'svg')) {
+					let y = elem('.Chart-Year'), m = elem('.Chart-Month');
+					if (y.style.opacity !== '0') {
+						m.style.opacity = '1';
+						y.style.opacity = '0';
+					}
+					else {
+						m.style.opacity = '0';
+						y.style.opacity = '1';
+					}
+				}
+			});
+
+			//--------------------------------------------------------------------------------------->
+
+			function readCsv(csv_file) {
+				if (!csv_file) return;
+				let reader = new FileReader();
+				reader.readAsText(csv_file, "UTF-8");
+				reader.onload = (function(e) {
+					g.csv_index++;
+					let index = String(g.csv_index);
+					g.reports[index] = e.target.result;
+					addReport();
+					makeGraph(index);
+					elem('#File-input').value = '';
+				});
+			}
+
+			//--------------------------------------------------------------------------------------->
+
+			function addReport() {
+				let left_panel = elem('.Left-panel');
+				left_panel.innerHTML += ('<div class="Buttons" id="Report-' + g.csv_index + '">Report ' + g.csv_index + '.<div class="Removers" id="Remove-' + g.csv_index + '">×</div></div>');
+			}
+
+			//--------------------------------------------------------------------------------------->
+
+			function removeReport(index) {
+				let left_panel = elem('.Left-panel'), report = elem('#Report-' + index);
+				left_panel.removeChild(report);
+				delete g.reports[index];
+			}
+
+			//--------------------------------------------------------------------------------------->
+
+			function makeGraph(index) {
+				let i, report = g.reports[index], rows = report.split('\n'), data = {
+					year: {
+						value: 0,
+						balance: 0,
+						first: parseFloat(rows[1].split('.')[0]),
+						last: (parseFloat(rows[rows.length-2].split('.')[0]) + 1),
+						items: []
+					},
+					month: {
+						value: 0,
+						balance: 0,
+						first: parseFloat(rows[1].split('.')[1]),
+						counter: -1,
+						items: []
+					}
+				};
+
+				for (i = 0; i < ((data.year.last - data.year.first) * 12); i++) data.month.items.push(0);
+
+				for (i = 1; i < rows.length-1; i++) {
+					let y = parseFloat(rows[i+1].split('.')[0]),
+						m = parseFloat(rows[i+1].split('.')[1]),
+						b = parseFloat(rows[i].split('\t')[1]);
+
+					if (data.year.value !== y) {
+						if (i > 1) data.year.items.push(b - data.year.balance);
+						data.year.balance = b;
+						data.year.value = y;
+					}
+					if (data.month.value !== m) {
+						if (i > 1) data.month.items[data.month.counter] = (b - data.month.balance);
+						data.month.balance = b;
+						data.month.counter++;
+						data.month.value = m;
+					}
+				}
+
+				// Year ---------------------------//
+
+				let year_column = createColumnGraph({
+					elem: 'Chart-Year-Column',
+					items: data.year.items
+				});
+				let year_line = data.year.items.slice(0);
+				year_line.unshift(0);
+				createLineGraph({
+					elem: 'Chart-Year-Line',
+					items: year_line
+				});
+
+				let html = '';
+				year_column.points.step.map(function(x, i) { html += ('<div class="Year-separators" style="width:' + year_column.thickness.column.max + 'px">' + (data.year.first + i) + '</div>') });
+				elem('.Year-separator-block').innerHTML = html;
+
+				year_column.elem.innerHTML += '<div id="Yearly-marker" class="Markers"></div>';
+				year_column.dataByCursor(1000, function(cursor) {
+					let marker = elem('#Yearly-marker');
+					if (cursor.hover && cursor.pointX !== undefined) {
+						marker.style.display = 'block';
+						marker.style.marginLeft = cursor.pointX + 'px';
+						marker.style.marginTop = cursor.pointY + 'px';
+						if (elem('.Chart-Year').style.opacity !== '0') elem('.Stats').innerHTML = cursor.valueX.toFixed(2) + '<br>Átlag: ' + year_column.values.avg.toFixed(2);
+					}
+					else if (!cursor.hover) marker.style.display = 'none';
+				});
+
+				// Month --------------------------//
+
+				let month_column = createColumnGraph({
+					elem: 'Chart-Month-Column',
+					items: data.month.items
+				});
+				let month_line = data.month.items.slice(0);
+				month_line.unshift(0);
+				createLineGraph({
+					elem: 'Chart-Month-Line',
+					items: month_line
+				});
+
+				month_column.elem.innerHTML += '<div id="Monthly-marker" class="Markers"></div>';
+				month_column.dataByCursor(1000, function(cursor) {
+					let marker = elem('#Monthly-marker');
+					if (cursor.hover && cursor.pointX !== undefined) {
+						marker.style.display = 'block';
+						marker.style.marginLeft = cursor.pointX + 'px';
+						marker.style.marginTop = cursor.pointY + 'px';
+						if (elem('.Chart-Month').style.opacity !== '0') elem('.Stats').innerHTML = monthName((data.month.first + cursor.iX) % 12) + ': ' + cursor.valueX.toFixed(2) + '<br>Átlag: ' + month_column.values.avg.toFixed(2);
+					}
+					else if (!cursor.hover) marker.style.display = 'none';
+				});
+			}
+
+		</script>
+	</body>
+</html>
