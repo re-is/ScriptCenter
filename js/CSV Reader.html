@@ -4,7 +4,7 @@
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<script type="text/javascript" src="https://cdn.rawgit.com/re-is/script/main/js/source_loader.js" link="https://raw.githubusercontent.com/re-is/script/main/js/graph-lib.js"></script>
-		<title>CSV Reader</title>
+		<title>MT5 Graph CSV Reader</title>
 		<style type="text/css">
 
 			.Main-body {
@@ -15,7 +15,7 @@
 				right: 0;
 				bottom: 0;
 				font-size: 1vw;
-				font-family: "Verdana", serif;
+				font-family: "Arial", serif;
 				user-select: none;
 				background-color: #eee;
 			}
@@ -31,27 +31,24 @@
 
 					.Buttons {
 						color: #fff;
-						width: calc(90% - 2px);
-						margin-left: 5%;
-						margin-top: 5%;
-						background-color: #555;
-						border: 1px solid #000;
+						width: 100%;
+						background-color: rgba(0,0,0,0.3);
+						border-bottom: 1px solid #000;
 						text-align: center;
 						cursor: pointer;
-						height: 1.6em;
-						line-height: 1.5em;
-					}	.Buttons:hover { box-shadow: 0 0 0 100px inset rgba(250,250,250,0.2) }
-
+						height: 3vw;
+						line-height: 3vw;
+					}
 						.Removers {
 							position: relative;
-							width: 1.2em;
-							background-color: #f43;
 							float: right;
-							height: 1.2em;
-							line-height: 1.1em;
-							top: 0.2em;
-							right: 0.2em;
-						}	.Removers:hover { box-shadow: 0 0 0 100px inset rgba(250,250,250,0.2) }
+							width: 1.5vw;
+							height: 1.5vw;
+							line-height: 1.5vw;
+							top: 0.3vw;
+							right: 0.3vw;
+							background-color: #d43;
+						}	.Buttons:hover, .Removers:hover { box-shadow: 0 0 0 100px inset rgba(250,250,250,0.3) }
 
 					.Stats {
 						position: absolute;
@@ -147,7 +144,6 @@
 		<div class="Main-body">
 			<div class="Left-panel">
 				<div class="Buttons" id="Browse">Browse CSV</div><input id="File-input" type="file" name="csv" class="csv-input" accept=".csv" onchange="readCsv(this.files[0])" style="display:none;" placeholder="_">
-				<hr style="width: 90%; border-color: #000">
 				<div class="Stats"></div>
 			</div>
 			<div class="Year-separator-block"></div>
@@ -211,7 +207,7 @@
 
 			function addReport() {
 				let left_panel = elem('.Left-panel');
-				left_panel.innerHTML += ('<div class="Buttons" id="Report-' + g.csv_index + '">Report ' + g.csv_index + '.<div class="Removers" id="Remove-' + g.csv_index + '">×</div></div>');
+				left_panel.innerHTML += ('<div class="Buttons" id="Report-' + g.csv_index + '">Graph ' + g.csv_index + '.<div class="Removers" id="Remove-' + g.csv_index + '">×</div></div>');
 			}
 
 			//--------------------------------------------------------------------------------------->
@@ -286,7 +282,7 @@
 						marker.style.display = 'block';
 						marker.style.marginLeft = cursor.pointX + 'px';
 						marker.style.marginTop = cursor.pointY + 'px';
-						if (elem('.Chart-Year').style.opacity !== '0') elem('.Stats').innerHTML = cursor.valueX.toFixed(2) + '<br>Átlag: ' + year_column.values.avg.toFixed(2);
+						if (elem('.Chart-Year').style.opacity !== '0') elem('.Stats').innerHTML = cursor.valueX.toFixed(2) + '<br>Avg: ' + year_column.values.avg.toFixed(2);
 					}
 					else if (!cursor.hover) marker.style.display = 'none';
 				});
@@ -311,7 +307,7 @@
 						marker.style.display = 'block';
 						marker.style.marginLeft = cursor.pointX + 'px';
 						marker.style.marginTop = cursor.pointY + 'px';
-						if (elem('.Chart-Month').style.opacity !== '0') elem('.Stats').innerHTML = monthName((data.month.first + cursor.iX) % 12) + ': ' + cursor.valueX.toFixed(2) + '<br>Átlag: ' + month_column.values.avg.toFixed(2);
+						if (elem('.Chart-Month').style.opacity !== '0') elem('.Stats').innerHTML = monthName((data.month.first + cursor.iX) % 12) + ': ' + cursor.valueX.toFixed(2) + '<br>Avg: ' + month_column.values.avg.toFixed(2);
 					}
 					else if (!cursor.hover) marker.style.display = 'none';
 				});
