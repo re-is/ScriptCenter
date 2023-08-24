@@ -1,0 +1,8 @@
+{
+	"latest-version": "1",
+	"message": "kjjklj",
+	"download-link": "",
+	"download-ext": "",
+	"web-page": "",
+	"hta-text": "<!DOCTYPE html>\r\n<html>\r\n\t<head>\r\n\t\t<!-- Szükséges META tag-ek -->\r\n\t\t<meta charset=\"UTF-8\">\r\n\t\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=11\">\r\n\t\t<!-- Super HTA Library betöltése -->\r\n\t\t<script type=\"text/javascript\" src=\"shl.220511.mer.js\"></script>\r\n\t\t<script type=\"text/javascript\">try{window.shl = new SuperHtaLibrary()}catch(e){window.alert(\"Nincs internet kapcsolat!\");window.close()}</script>\r\n\t\t<!-- CSS -->\r\n\t\t<style type=\"text/css\">\r\n\r\n\t\t\tbody:not(script) {\r\n\t\t\t\tfont-family: \"Tahoma\", sans-serif;\r\n\t\t\t\tfont-size: 18px;\r\n\t\t\t}\r\n\r\n\t\t\t#Application {\r\n\t\t\t\tposition: absolute;\r\n\t\t\t\toverflow: auto;\r\n\t\t\t\ttop: 0;\r\n\t\t\t\tleft: 0;\r\n\t\t\t\tright: 0;\r\n\t\t\t\tbottom: 0;\r\n\t\t\t\tpadding: 0.5em;\r\n\t\t\t}\t#Application[theme=\"light\"] {\r\n\t\t\t\t\tbackground-color: #eee;\r\n\t\t\t\t\tcolor: #333;\r\n\t\t\t\t}\r\n\t\t\t\t#Application[theme=\"dark\"] {\r\n\t\t\t\t\tbackground-color: #222;\r\n\t\t\t\t\tcolor: #fff;\r\n\t\t\t\t}\r\n\r\n\t\t</style>\r\n\t</head>\r\n\t<body>\r\n\t\t<div id=\"Application\">\r\n\t\t</div>\r\n\t\t<script type=\"text/javascript\">\r\n\r\n\t\t\tshl.wnd.open({\r\n\t\t\t\ticon\t\t: 'https://raw.githubusercontent.com/re-is/hta/main/setup.ico',\r\n\t\t\t\ttitlebar\t: true,\r\n\t\t\t\ttitle\t\t: 'Title',\r\n\t\t\t\ttype\t\t: 'tool',\r\n\t\t\t\twidth\t\t: 800,\r\n\t\t\t\theight\t\t: 500\r\n\t\t\t});\r\n\r\n\t\t\tshl.hta.update(\"url of uploaded update file\", 1);\r\n\r\n\t\t</script>\r\n\t</body>\r\n</html>\r\n"
+}
