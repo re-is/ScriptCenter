@@ -3,7 +3,7 @@
 	let script = document.getElementsByTagName('script'), links = [];
 	for (var i = 0; i < script.length; i++) {
 		let linkAttr = script[i].getAttribute('link');
-		if ((script[i].getAttribute('src').indexOf('source_loader.js') > -1) && (linkAttr !== null)) {
+		if ((script[i].getAttribute('src').indexOf('shl-script-loader.js') > -1) && (linkAttr !== null)) {
 			let link = ((linkAttr.indexOf(';') > -1) ? linkAttr.split(/\s*;\s*/) : [linkAttr]);
 			for (var l = 0; l < link.length; l++) {
 				links.push(link[l]);
