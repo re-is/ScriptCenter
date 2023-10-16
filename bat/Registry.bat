@@ -1,7 +1,17 @@
 @echo off
 
-reg add "HKCU\Software\teszt_kulcs" /v egyes_value /t REG_SZ /d value /f
+reg add "HKCU\Software\my key" /ve /d "My Default Data" /f
+pause
+reg add "HKCU\Software\my key" /v "1. value" /t REG_SZ /d "My Data 1." /f
+pause
 
-reg add "HKCU\Software\teszt_kulcs" /v egyes_value /t REG_DWORD /d 1 /f
+reg query "HKCU\Software\my key" /v "1. value"
+echo %errorlevel%
+pause
 
-reg delete "HKCU\Software\teszt_kulcs" /f
+reg add "HKCU\Software\my key" /v "2. value" /t REG_DWORD /d 1 /f
+pause
+reg delete "HKCU\Software\my key" /v "1. value" /f
+pause
+reg delete "HKCU\Software\my key" /f
+pause
